@@ -6,25 +6,22 @@ He Xiangnan et al. Neural Collaborative Filtering. In WWW 2017.
 @author: Xiangnan He (xiangnanhe@gmail.com)
 '''
 
-import numpy as np
+import os;
+os.environ['KERAS_BACKEND'] = 'theano'
 
-import theano
-import theano.tensor as T
-import keras
-from keras import backend as K
-from keras import initializations
-from keras.regularizers import l2, activity_l2
-from keras.models import Sequential, Graph, Model
-from keras.layers.core import Dense, Lambda, Activation
-from keras.layers import Embedding, Input, Dense, merge, Reshape, Merge, Flatten, Dropout
-from keras.constraints import maxnorm
-from keras.optimizers import Adagrad, Adam, SGD, RMSprop
-from evaluate import evaluate_model
-from Dataset import Dataset
-from time import time
-import sys
 import argparse
-import multiprocessing as mp
+from time import time
+
+import numpy as np
+from keras import initializations
+from keras.layers import Embedding, Input, Dense, merge, Flatten
+from keras.models import Model
+from keras.optimizers import Adagrad, Adam, SGD, RMSprop
+from keras.regularizers import l2
+
+from Dataset import Dataset
+from evaluate import evaluate_model
+
 
 #################### Arguments ####################
 def parse_args():
@@ -63,9 +60,9 @@ def get_model(num_users, num_items, layers = [20,10], reg_layers=[0,0]):
     user_input = Input(shape=(1,), dtype='int32', name = 'user_input')
     item_input = Input(shape=(1,), dtype='int32', name = 'item_input')
 
-    MLP_Embedding_User = Embedding(input_dim = num_users, output_dim = layers[0]/2, name = 'user_embedding',
+    MLP_Embedding_User = Embedding(input_dim = num_users, output_dim = layers[0]//2, name = 'user_embedding',
                                   init = init_normal, W_regularizer = l2(reg_layers[0]), input_length=1)
-    MLP_Embedding_Item = Embedding(input_dim = num_items, output_dim = layers[0]/2, name = 'item_embedding',
+    MLP_Embedding_Item = Embedding(input_dim = num_items, output_dim = layers[0]//2, name = 'item_embedding',
                                   init = init_normal, W_regularizer = l2(reg_layers[0]), input_length=1)   
     
     # Crucial to flatten an embedding vector!
@@ -76,7 +73,7 @@ def get_model(num_users, num_items, layers = [20,10], reg_layers=[0,0]):
     vector = merge([user_latent, item_latent], mode = 'concat')
     
     # MLP layers
-    for idx in xrange(1, num_layer):
+    for idx in range(1, num_layer):
         layer = Dense(layers[idx], W_regularizer= l2(reg_layers[idx]), activation='relu', name = 'layer%d' %idx)
         vector = layer(vector)
         
@@ -97,9 +94,9 @@ def get_train_instances(train, num_negatives):
         item_input.append(i)
         labels.append(1)
         # negative instances
-        for t in xrange(num_negatives):
+        for t in range(num_negatives):
             j = np.random.randint(num_items)
-            while train.has_key((u, j)):
+            while (u,j) in train:
                 j = np.random.randint(num_items)
             user_input.append(u)
             item_input.append(j)
@@ -111,7 +108,9 @@ if __name__ == '__main__':
     path = args.path
     dataset = args.dataset
     layers = eval(args.layers)
+    layers = [int(i) for i in layers]
     reg_layers = eval(args.reg_layers)
+    reg_layers = [int(i) for i in reg_layers]
     num_negatives = args.num_neg
     learner = args.learner
     learning_rate = args.lr
@@ -133,8 +132,9 @@ if __name__ == '__main__':
           %(time()-t1, num_users, num_items, train.nnz, len(testRatings)))
     
     # Build model
-    model = get_model(num_users, num_items, layers, reg_layers)
-    if learner.lower() == "adagrad": 
+    #model = get_model(num_users, num_items, layers, reg_layers)
+    model = get_model(int(num_users), int(num_items),layers, reg_layers)
+    if learner.lower() == "adagrad":
         model.compile(optimizer=Adagrad(lr=learning_rate), loss='binary_crossentropy')
     elif learner.lower() == "rmsprop":
         model.compile(optimizer=RMSprop(lr=learning_rate), loss='binary_crossentropy')
@@ -151,7 +151,7 @@ if __name__ == '__main__':
     
     # Train model
     best_hr, best_ndcg, best_iter = hr, ndcg, -1
-    for epoch in xrange(epochs):
+    for epoch in range(epochs):
         t1 = time()
         # Generate training instances
         user_input, item_input, labels = get_train_instances(train, num_negatives)

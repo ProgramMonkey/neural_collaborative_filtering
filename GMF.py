@@ -6,6 +6,8 @@ He Xiangnan et al. Neural Collaborative Filtering. In WWW 2017.
 
 @author: Xiangnan He (xiangnanhe@gmail.com)
 '''
+import os;
+os.environ['KERAS_BACKEND'] = 'theano'
 import numpy as np
 import theano.tensor as T
 import keras
@@ -89,9 +91,10 @@ def get_train_instances(train, num_negatives):
         item_input.append(i)
         labels.append(1)
         # negative instances
-        for t in xrange(num_negatives):
+        for t in range(num_negatives):
             j = np.random.randint(num_items)
-            while train.has_key((u, j)):
+            # while train.has_key((u, j)):
+            while (u,j) in train:
                 j = np.random.randint(num_items)
             user_input.append(u)
             item_input.append(j)
@@ -144,7 +147,7 @@ if __name__ == '__main__':
     
     # Train model
     best_hr, best_ndcg, best_iter = hr, ndcg, -1
-    for epoch in xrange(epochs):
+    for epoch in range(epochs):
         t1 = time()
         # Generate training instances
         user_input, item_input, labels = get_train_instances(train, num_negatives)
