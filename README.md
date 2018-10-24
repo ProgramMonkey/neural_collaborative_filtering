@@ -54,6 +54,7 @@ test.rating:
 test.negative
 - Test file (negative instances).
 - Each line corresponds to the line of test.rating, containing 99 negative samples.  
+- The negative samples are randomly selected from the unobserved items, so it is not necessarily "negative"
 - Each line is in the format: (userID,itemID)\t negativeItemID1\t negativeItemID2 ...
 
 Last Update Date: August 2, 2017

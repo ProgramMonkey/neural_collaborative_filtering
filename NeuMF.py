@@ -95,6 +95,7 @@ def get_model(num_users, num_items, mf_dim=10, layers=[10], reg_layers=[0], reg_
     # Concatenate MF and MLP parts
     #mf_vector = Lambda(lambda x: x * alpha)(mf_vector)
     #mlp_vector = Lambda(lambda x : x * (1-alpha))(mlp_vector)
+    # get trained jointly
     predict_vector = merge([mf_vector, mlp_vector], mode = 'concat')
     
     # Final prediction layer
@@ -204,7 +205,9 @@ if __name__ == '__main__':
     best_hr, best_ndcg, best_iter = hr, ndcg, -1
     if args.out > 0:
         model.save_weights(model_out_file, overwrite=True) 
-        
+
+    model.summary()
+
     # Training model
     for epoch in range(num_epochs):
         t1 = time()

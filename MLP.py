@@ -55,7 +55,8 @@ def init_normal(shape, name=None):
 
 def get_model(num_users, num_items, layers = [20,10], reg_layers=[0,0]):
     assert len(layers) == len(reg_layers)
-    num_layer = len(layers) #Number of layers in the MLP
+    # Number of inner layers in the MLP
+    num_layer = len(layers)
     # Input variables
     user_input = Input(shape=(1,), dtype='int32', name = 'user_input')
     item_input = Input(shape=(1,), dtype='int32', name = 'item_input')
@@ -74,7 +75,7 @@ def get_model(num_users, num_items, layers = [20,10], reg_layers=[0,0]):
     
     # MLP layers
     for idx in range(1, num_layer):
-        layer = Dense(layers[idx], W_regularizer= l2(reg_layers[idx]), activation='relu', name = 'layer%d' %idx)
+        layer = Dense(layers[idx], W_regularizer= l2(reg_layers[idx]), activation='relu', name = 'layer%d' %idx) # the parameter of l2 should be the parameter of l2
         vector = layer(vector)
         
     # Final prediction layer
@@ -141,14 +142,16 @@ if __name__ == '__main__':
     elif learner.lower() == "adam":
         model.compile(optimizer=Adam(lr=learning_rate), loss='binary_crossentropy')
     else:
-        model.compile(optimizer=SGD(lr=learning_rate), loss='binary_crossentropy')    
-    
+        model.compile(optimizer=SGD(lr=learning_rate), loss='binary_crossentropy')
+
     # Check Init performance
     t1 = time()
     (hits, ndcgs) = evaluate_model(model, testRatings, testNegatives, topK, evaluation_threads)
     hr, ndcg = np.array(hits).mean(), np.array(ndcgs).mean()
     print('Init: HR = %.4f, NDCG = %.4f [%.1f]' %(hr, ndcg, time()-t1))
-    
+
+    model.summary()
+
     # Train model
     best_hr, best_ndcg, best_iter = hr, ndcg, -1
     for epoch in range(epochs):

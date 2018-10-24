@@ -20,6 +20,7 @@ _testRatings = None
 _testNegatives = None
 _K = None
 
+
 def evaluate_model(model, testRatings, testNegatives, K, num_thread):
     """
     Evaluate the performance (Hit_Ratio, NDCG) of top-K recommendation
@@ -52,19 +53,19 @@ def evaluate_model(model, testRatings, testNegatives, K, num_thread):
 
 def eval_one_rating(idx):
     rating = _testRatings[idx]
-    items = _testNegatives[idx]
-    u = rating[0]
-    gtItem = rating[1]
-    items.append(gtItem)
+    items = _testNegatives[idx] # initialize the item with all negative lists
+    u = rating[0] # get the user
+    gtItem = rating[1] # get the positive list
+    items.append(gtItem)  # add the positive item to the list
     # Get prediction scores
     map_item_score = {}
     users = np.full(len(items), u, dtype = 'int32')
     predictions = _model.predict([users, np.array(items)], 
                                  batch_size=100, verbose=0)
-    for i in range(len(items)):
+    for i in range(len(items)): # map the item to their score.
         item = items[i]
         map_item_score[item] = predictions[i]
-    items.pop()
+    items.pop() # why ?????
     
     # Evaluate top rank list
     ranklist = heapq.nlargest(_K, map_item_score, key=map_item_score.get)
