@@ -1,0 +1,9 @@
+1. first use anaconda to install the environment
+   conda env create -n ncf -f environment.yml
+
+2. use "pip install" in anaconda prompt to install some packages that do not exist in the conda repository to meet the requirements in the
+   requirements in requirements.txt
+
+   pip install Keras==1.0.7
+   pip install numpy==1.14.5
+   pip install Theano==0.8.0
